@@ -13,3 +13,188 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+/// Represents a merchant or brand issuing Perk NFTs.
+model Merchant {
+  id            String    @id @default(cuid())
+  name          String
+  slug          String    @unique
+  logoUrl       String?
+  coverImageUrl String?
+  websiteUrl    String?
+  contactEmail  String?
+  description   String?
+  categories    String[]  @default([])
+  verified      Boolean   @default(false)
+  socialLinks   Json?
+  deals         Deal[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+/// High-level definition of a deal before it is minted into NFTs.
+model Deal {
+  id              String        @id @default(cuid())
+  merchantId      String
+  merchant        Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  title           String
+  slug            String        @unique
+  summary         String
+  description     String
+  heroImageUrl    String?
+  galleryImages   String[]      @default([])
+  discountType    DiscountType
+  discountValue   Decimal?      @db.Decimal(10, 2)
+  originalPrice   Decimal?      @db.Decimal(10, 2)
+  currency        String        @default("USD")
+  tags            String[]      @default([])
+  categories      String[]      @default([])
+  location        String?
+  supplyCap       Int?
+  perWalletLimit  Int?          @default(1)
+  startsAt        DateTime?
+  expiresAt       DateTime?
+  status          DealStatus    @default(DRAFT)
+  redemptionNotes String?
+  termsUrl        String?
+  externalUrl     String?
+  socialShareText String?
+  mintedCoupons   DealCoupon[]
+  interactions    DealInteraction[]
+  analytics       DealAnalytics?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+/// Represents a minted coupon NFT.
+model DealCoupon {
+  id              String        @id @default(cuid())
+  dealId          String
+  deal            Deal          @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  mintAddress     String?
+  tokenId         String?
+  serialNumber    Int?
+  ownerWallet     String?
+  beneficiaryEmail String?
+  state           CouponState   @default(AVAILABLE)
+  redemptionCode  String?
+  redemptionUrl   String?
+  mintedAt        DateTime      @default(now())
+  redeemedAt      DateTime?
+  revokedAt       DateTime?
+  notes           String?
+  transferEvents  CouponTransfer[]
+  interactions    DealInteraction[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+/// Tracks lifecycle of a coupon transfer (secondary market, gifting, etc.).
+model CouponTransfer {
+  id          String      @id @default(cuid())
+  couponId    String
+  coupon      DealCoupon  @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  fromWallet  String?
+  toWallet    String
+  txSignature String?
+  marketplace String?
+  transferredAt DateTime  @default(now())
+}
+
+/// Application user tied to wallet + optional Web2 identity.
+model UserProfile {
+  id            String      @id @default(cuid())
+  walletAddress String      @unique
+  email         String?
+  username      String?
+  avatarUrl     String?
+  bio           String?
+  location      String?
+  preferences   Json?
+  reputations   UserBadge[]
+  interactions  DealInteraction[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+/// User badges for loyalty tiers, etc.
+model UserBadge {
+  id            String      @id @default(cuid())
+  userId        String
+  user          UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeType     BadgeType
+  level         Int         @default(1)
+  issuedAt      DateTime    @default(now())
+  expiresAt     DateTime?
+  metadataUrl   String?
+}
+
+/// Interaction log for analytics (views, saves, shares, redemptions).
+model DealInteraction {
+  id            String        @id @default(cuid())
+  dealId        String
+  deal          Deal          @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          UserProfile?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  couponId      String?
+  coupon        DealCoupon?   @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  type          InteractionType
+  context       Json?
+  occurredAt    DateTime      @default(now())
+}
+
+/// Aggregated analytics snapshot per deal.
+model DealAnalytics {
+  id                 String   @id @default(cuid())
+  dealId             String   @unique
+  deal               Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  totalViews         Int      @default(0)
+  totalFavorites     Int      @default(0)
+  totalClaims        Int      @default(0)
+  totalRedemptions   Int      @default(0)
+  totalTransfers     Int      @default(0)
+  lastInteractionAt  DateTime?
+  updatedAt          DateTime @updatedAt
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FLAT
+  BOGO
+  CASHBACK
+}
+
+enum DealStatus {
+  DRAFT
+  UPCOMING
+  ACTIVE
+  SOLD_OUT
+  EXPIRED
+  ARCHIVED
+}
+
+enum CouponState {
+  AVAILABLE
+  RESERVED
+  TRANSFERRED
+  REDEEMED
+  REVOKED
+}
+
+enum InteractionType {
+  VIEW
+  FAVORITE
+  SHARE
+  CLAIM
+  TRANSFER
+  REDEEM
+  COMMENT
+}
+
+enum BadgeType {
+  POWER_USER
+  SUPER_SHARER
+  TRUSTED_MERCHANT
+  EARLY_ADOPTER
+  COMMUNITY_LEADER
+}
