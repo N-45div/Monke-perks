@@ -3,6 +3,19 @@ import { ArrowRight, Crown, Gift, Rocket, Sparkle, Sun, Users, Wallet2, Wand2, Z
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
+export type FeaturedDrop = {
+  id: string
+  badge: string
+  brand: string
+  title: string
+  gradient: string
+  stats: { label: string; value: string }[]
+}
+
+type LandingPageProps = {
+  featuredDrops?: FeaturedDrop[]
+}
+
 const heroHighlights = [
   {
     title: 'Collectible coupons',
@@ -21,7 +34,7 @@ const heroHighlights = [
   },
 ]
 
-const featuredDrops = [
+const FALLBACK_FEATURED_DROPS: FeaturedDrop[] = [
   {
     id: 'mango-airlounge',
     badge: 'Travel drop',
@@ -90,11 +103,11 @@ const partnerBadges = [
   { label: 'Dripverse Loyalty', icon: <Gift className="h-5 w-5 text-sky-200" /> },
 ]
 
-export function LandingPage() {
+export function LandingPage({ featuredDrops = FALLBACK_FEATURED_DROPS }: LandingPageProps) {
   return (
     <div className="flex flex-col gap-20 pb-24">
       <HeroSection />
-      <FeaturedDrops />
+      <FeaturedDrops items={featuredDrops} />
       <HowItWorks />
       <StatsMarquee />
       <IntegrationCTA />
@@ -193,7 +206,7 @@ function HeroSection() {
   )
 }
 
-function FeaturedDrops() {
+function FeaturedDrops({ items }: { items: FeaturedDrop[] }) {
   return (
     <section id="discover" className="space-y-8">
       <div className="flex flex-col gap-3 text-center text-white">
@@ -207,7 +220,7 @@ function FeaturedDrops() {
         </p>
       </div>
       <div className="grid gap-6 lg:grid-cols-3">
-        {featuredDrops.map((drop) => (
+        {items.map((drop) => (
           <article
             key={drop.id}
             className={`group relative overflow-hidden rounded-[28px] border border-white/15 bg-gradient-to-br ${drop.gradient} p-[1px] shadow-[0_18px_50px_-20px_rgba(255,111,145,0.65)]`}

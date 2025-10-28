@@ -7,7 +7,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "seed": "tsx prisma/seed.ts",
+    "ingest:booking": "tsx scripts/ingest-booking.ts"
   },
   "displayName": "Gill Boilerplate",
   "description": "Next.js, Tailwind, gill (based on @solana/kit), Wallet UI",
@@ -60,6 +62,7 @@
     "prettier": "^3.6.2",
     "prisma": "^6.18.0",
     "tailwindcss": "^4.1.13",
+    "tsx": "^4.19.1",
     "typescript": "^5.9.2",
     "ws": "^8.18.3"
   }
