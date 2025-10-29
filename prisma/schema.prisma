@@ -62,6 +62,7 @@ model Deal {
   mintedCoupons   DealCoupon[]
   interactions    DealInteraction[]
   analytics       DealAnalytics?
+  dailyDrops      DailyDrop[]
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 }
@@ -79,12 +80,15 @@ model DealCoupon {
   state           CouponState   @default(AVAILABLE)
   redemptionCode  String?
   redemptionUrl   String?
+  solanaPayReference String?    @unique
+  solanaPayTx       String?
   mintedAt        DateTime      @default(now())
   redeemedAt      DateTime?
   revokedAt       DateTime?
   notes           String?
   transferEvents  CouponTransfer[]
   interactions    DealInteraction[]
+  dropClaims      DropClaim[]
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 }
@@ -113,6 +117,8 @@ model UserProfile {
   preferences   Json?
   reputations   UserBadge[]
   interactions  DealInteraction[]
+  streak        UserStreak?
+  dropClaims    DropClaim[]
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 }
@@ -157,6 +163,59 @@ model DealAnalytics {
   updatedAt          DateTime @updatedAt
 }
 
+/// Represents the daily Drop Rush configuration for a specific deal.
+model DailyDrop {
+  id               String       @id @default(cuid())
+  dealId           String
+  deal             Deal         @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  title            String
+  description      String?
+  startAt          DateTime
+  endAt            DateTime
+  supplyAllocation Int
+  streakMultiplier Int         @default(1)
+  status           DropStatus  @default(SCHEDULED)
+  claims           DropClaim[]
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@index([startAt])
+  @@index([endAt])
+}
+
+/// Tracks each user claim attempt in Drop Rush along with Solana Pay references.
+model DropClaim {
+  id              String          @id @default(cuid())
+  dropId          String
+  drop            DailyDrop       @relation(fields: [dropId], references: [id], onDelete: Cascade)
+  userId          String?
+  user            UserProfile?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  couponId        String?
+  coupon          DealCoupon?     @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  walletAddress   String?
+  streakSnapshot  Int             @default(0)
+  reference       String?         @unique
+  transactionSig  String?
+  status          DropClaimStatus @default(PENDING)
+  claimedAt       DateTime        @default(now())
+  completedAt     DateTime?
+
+  @@index([dropId, status])
+  @@index([walletAddress])
+}
+
+/// Stores streak metrics per user for Drop Rush.
+model UserStreak {
+  id             String       @id @default(cuid())
+  userId         String       @unique
+  user           UserProfile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentStreak  Int          @default(0)
+  longestStreak  Int          @default(0)
+  lastClaimAt    DateTime?
+  updatedAt      DateTime     @updatedAt
+  createdAt      DateTime     @default(now())
+}
+
 enum DiscountType {
   PERCENTAGE
   FLAT
@@ -179,6 +238,21 @@ enum CouponState {
   TRANSFERRED
   REDEEMED
   REVOKED
+}
+
+enum DropStatus {
+  SCHEDULED
+  LIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum DropClaimStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  EXPIRED
 }
 
 enum InteractionType {
