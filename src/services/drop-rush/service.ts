@@ -1,6 +1,7 @@
 import { differenceInHours } from 'date-fns'
 import { prisma } from '@/lib/prisma'
-import { env } from '@/lib/utils'
+import { deleteCache } from '@/lib/redis'
+import { env, optionalEnv } from '@/lib/utils'
 import { DropClaimError, DropClaimErrorCode } from './errors'
 import { buildPaymentUrl, generateReference } from './solana-pay'
 
@@ -14,6 +15,9 @@ async function markDropLive(dropId: string) {
   return prisma.dailyDrop.update({
     where: { id: dropId },
     data: { status: 'LIVE' },
+    include: {
+      deal: true,
+    },
   })
 }
 
@@ -34,7 +38,7 @@ export async function getActiveDrop() {
   if (!drop) return null
 
   if (drop.status === 'SCHEDULED') {
-    return markDropLive(drop.id)
+    return await markDropLive(drop.id)
   }
 
   return drop
@@ -148,11 +152,13 @@ export async function claimDrop({ dropId, walletAddress }: ClaimDropParams) {
       },
     })
 
-    const shouldGeneratePayment = Boolean(drop.deal.originalPrice && drop.deal.originalPrice > 0)
+    const originalPrice = drop.deal.originalPrice ? Number(drop.deal.originalPrice) : 0
+    const recipient = optionalEnv('SOLANA_PAY_RECIPIENT')
+    const shouldGeneratePayment = Boolean(recipient && originalPrice > 0)
     const reference = generateReference()
     const paymentUrl = shouldGeneratePayment
       ? buildPaymentUrl({
-          recipient: env('SOLANA_PAY_RECIPIENT'),
+          recipient,
           reference,
           label: drop.title,
           message: drop.description ?? undefined,
@@ -208,6 +214,9 @@ export async function claimDrop({ dropId, walletAddress }: ClaimDropParams) {
       longestStreak: Math.max(nextLongest, streakRecord.longestStreak),
     }
   })
+
+  await deleteCache('drop:today')
+  await deleteCache('drop:leaderboard')
 
   return result
 }

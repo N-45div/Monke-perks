@@ -13,6 +13,11 @@ export function env(name: string): string {
   return value
 }
 
+export function optionalEnv(name: string): string | undefined {
+  const value = process.env[name]
+  return value && value.length > 0 ? value : undefined
+}
+
 export function ellipsify(str = '', len = 4, delimiter = '..') {
   const strLen = str.length
   const limit = len * 2 + delimiter.length
