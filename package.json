@@ -10,6 +10,7 @@
     "start": "next start",
     "seed": "tsx prisma/seed.ts",
     "ingest:booking": "tsx scripts/ingest-booking.ts",
+    "drop:confirm": "tsx scripts/confirm-drop-claims.ts",
     "test:landing": "tsx tests/landing-transform.spec.ts",
     "smoke:deals": "tsx scripts/smoke-check.ts"
   },
