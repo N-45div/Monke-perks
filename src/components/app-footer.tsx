@@ -28,14 +28,14 @@ const socials = [
 
 export function AppFooter() {
   return (
-    <footer className="border-t border-white/10 bg-[#04071B]/95 text-white">
+    <footer className="border-t border-white/10 bg-black/95 text-white">
       <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-10 px-6 py-12 md:flex-row md:justify-between">
         <div className="max-w-sm space-y-4">
           <div className="flex items-center gap-3 text-lg font-extrabold tracking-tight">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF6F91] via-[#845EC2] to-[#FFC75F] text-sm font-black text-slate-900 shadow-lg">
-              MP
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/10 text-sm font-black text-white">
+              DM
             </span>
-            MonkePerks
+            DealMint
           </div>
           <p className="text-sm text-white/70">
             The DAO-owned deal discovery network. Collect liquid perks, mint brand-new drops, and onboard merchants with
@@ -43,7 +43,7 @@ export function AppFooter() {
           </p>
           <div className="flex items-center gap-3 text-sm text-white/60">
             Powered by{' '}
-            <a href="https://solana.com" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#FF6F91]">
+            <a href="https://solana.com" target="_blank" rel="noopener noreferrer" className="text-white hover:opacity-80">
               Solana
             </a>{' '}
             &amp;{' '}
@@ -51,7 +51,7 @@ export function AppFooter() {
               href="https://github.com/solana-foundation/create-solana-dapp"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-white hover:text-[#FF6F91]"
+              className="text-white hover:opacity-80"
             >
               create-solana-dapp
             </a>
@@ -74,9 +74,9 @@ export function AppFooter() {
           ))}
         </div>
       </div>
-      <div className="border-t border-white/10">·
+      <div className="border-t border-white/10">
         <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-4 px-6 py-6 text-xs text-white/60 md:flex-row md:items-center md:justify-between">
-          <p>© {new Date().getFullYear()} MonkePerks DAO. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} DealMint. All rights reserved.</p>
           <div className="flex items-center gap-4">
             {socials.map(({ icon: Icon, href, label }) => (
               <a key={label} href={href} target="_blank" rel="noopener noreferrer" className="transition hover:text-white">

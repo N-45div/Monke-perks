@@ -90,9 +90,10 @@ function calculateNextStreak(lastClaimAt: Date | null | undefined, currentStreak
 export interface ClaimDropParams {
   dropId: string
   walletAddress: string
+  referrerWallet?: string | null
 }
 
-export async function claimDrop({ dropId, walletAddress }: ClaimDropParams) {
+export async function claimDrop({ dropId, walletAddress, referrerWallet }: ClaimDropParams) {
   const drop = await prisma.dailyDrop.findUnique({
     where: { id: dropId },
     include: {
@@ -179,21 +180,22 @@ export async function claimDrop({ dropId, walletAddress }: ClaimDropParams) {
       },
     })
 
-    await tx.dealAnalytics.upsert({
-      where: { dealId: drop.dealId },
-      update: {
-        totalClaims: { increment: 1 },
-        lastInteractionAt: current,
-      },
-      create: {
+    // Create a simulated NFT coupon record and link to claim
+    const coupon = await tx.dealCoupon.create({
+      data: {
         dealId: drop.dealId,
-        totalClaims: 1,
-        totalViews: 0,
-        totalFavorites: 0,
-        totalRedemptions: 0,
-        totalTransfers: 0,
+        ownerWallet: walletAddress,
+        state: 'AVAILABLE',
+        solanaPayReference: reference ?? undefined,
       },
     })
+
+    const claimLinked = await tx.dropClaim.update({
+      where: { id: claim.id },
+      data: { couponId: coupon.id },
+    })
+
+    // moved analytics upsert outside interactive transaction to reduce risk of timeouts
 
     await tx.dealInteraction.create({
       data: {
@@ -203,16 +205,34 @@ export async function claimDrop({ dropId, walletAddress }: ClaimDropParams) {
         context: {
           dropId: drop.id,
           reference,
+          ...(referrerWallet ? { referrerWallet } : {}),
         },
       },
     })
 
     return {
-      claim,
+      claim: claimLinked,
       paymentUrl,
       currentStreak: nextCurrent,
       longestStreak: Math.max(nextLongest, streakRecord.longestStreak),
     }
+  }, { timeout: 15000, maxWait: 10000 })
+
+  // Perform analytics update after transaction commit
+  await prisma.dealAnalytics.upsert({
+    where: { dealId: drop.dealId },
+    update: {
+      totalClaims: { increment: 1 },
+      lastInteractionAt: now(),
+    },
+    create: {
+      dealId: drop.dealId,
+      totalClaims: 1,
+      totalViews: 0,
+      totalFavorites: 0,
+      totalRedemptions: 0,
+      totalTransfers: 0,
+    },
   })
 
   await deleteCache('drop:today')

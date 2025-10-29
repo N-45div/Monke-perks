@@ -14,9 +14,11 @@ const ClusterDropdown = dynamic(() => import('@/components/cluster-dropdown').th
 })
 
 const navItems = [
-  { label: 'Marketplace', href: '/' },
-  { label: 'Docs', href: '/docs' },
-  { label: 'DAO', href: 'https://monke.museum' },
+  { label: 'Home', href: '/' },
+  { label: 'Drop Rush', href: '/drop-rush' },
+  { label: 'Leaderboard', href: '/leaderboard' },
+  { label: 'Verify', href: '/verify' },
+  { label: 'Builders', href: '/builders' },
 ]
 
 export function AppHeader() {
@@ -26,13 +28,13 @@ export function AppHeader() {
   const isActive = (href: string) => (href === '/' ? pathname === href : pathname?.startsWith(href))
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#070A1F]/80 text-white shadow-[0_4px_30px_rgba(15,23,42,0.35)] backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-black/90 text-white backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-4 py-3 md:px-6 md:py-4">
         <Link href="/" className="flex items-center gap-2 text-lg font-extrabold tracking-tight md:text-xl">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF6F91] via-[#845EC2] to-[#FFC75F] text-sm font-black text-slate-900 shadow-lg">
-            MP
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/10 text-sm font-black text-white">
+            DM
           </span>
-          MonkePerks
+          DealMint
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-medium text-white/70 md:flex">
@@ -48,16 +50,16 @@ export function AppHeader() {
             asChild
             size="sm"
             variant="ghost"
-            className="rounded-full bg-white/10 font-semibold text-white shadow-sm shadow-[#FF6F91]/30 backdrop-blur transition hover:bg-white/20"
+            className="rounded-full bg-white/10 font-semibold text-white backdrop-blur transition hover:bg-white/20"
           >
-            <Link href="#discover">Browse Drops</Link>
+            <Link href="/drop-rush">See today’s drop</Link>
           </Button>
           <Button
             asChild
             size="sm"
-            className="rounded-full bg-gradient-to-r from-[#FF8A8A] via-[#FF6F1E] to-[#4E18C1] text-white shadow-lg shadow-[#FF6F1E]/30 transition hover:opacity-90"
+            className="rounded-full bg-white text-black transition hover:bg-white/90"
           >
-            <Link href="/contact">Launch your drop</Link>
+            <Link href="/verify">Verify</Link>
           </Button>
           <WalletDropdown />
           <ClusterDropdown />
@@ -73,20 +75,16 @@ export function AppHeader() {
       </div>
 
       {open ? (
-        <div className="border-t border-white/10 bg-[#070A1F]/95 text-white shadow-inner shadow-black/30 md:hidden">
+        <div className="border-t border-white/10 bg-black/95 text-white md:hidden">
           <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-4 px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex gap-3">
                 <ClusterDropdown />
                 <ThemeSelect />
               </div>
-              <Button
-                asChild
-                size="sm"
-                className="rounded-full bg-gradient-to-r from-[#FF8A8A] via-[#FF6F1E] to-[#4E18C1] text-white"
-              >
-                <Link href="/contact" onClick={() => setOpen(false)}>
-                  Launch drop
+              <Button asChild size="sm" className="rounded-full bg-white text-black">
+                <Link href="/verify" onClick={() => setOpen(false)}>
+                  Verify
                 </Link>
               </Button>
             </div>
@@ -102,13 +100,9 @@ export function AppHeader() {
                 </Link>
               ))}
             </nav>
-            <Button
-              asChild
-              variant="ghost"
-              className="rounded-full bg-white/10 font-semibold text-white hover:bg-white/20"
-            >
-              <Link href="#discover" onClick={() => setOpen(false)}>
-                Browse drops
+            <Button asChild variant="ghost" className="rounded-full bg-white/10 font-semibold text-white hover:bg-white/20">
+              <Link href="/drop-rush" onClick={() => setOpen(false)}>
+                See today’s drop
               </Link>
             </Button>
           </div>
