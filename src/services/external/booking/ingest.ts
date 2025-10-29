@@ -9,12 +9,12 @@ const DEFAULT_DESTINATIONS = ['Tokyo', 'Lisbon', 'New York']
 function buildDealSummary(hotel: BookingHotelResult): string {
   const highlights = hotel.property_highlight_strip?.map((item) => item.text).filter(Boolean) ?? []
   const base = hotel.property_description ?? highlights.slice(0, 3).join(' • ')
-  return base || 'Exclusive hotel offer curated by MonkePerks.'
+  return base || 'Exclusive hotel offer curated by DealMint.'
 }
 
 function buildDealDescription(hotel: BookingHotelResult): string {
   const details = [hotel.address, hotel.city, hotel.country_trans].filter(Boolean).join(', ')
-  return `${hotel.property_description ?? hotel.unit_configuration_label ?? 'Premium stay powered by MonkePerks.'}\n\nLocation: ${details}`
+  return `${hotel.property_description ?? hotel.unit_configuration_label ?? 'Premium stay powered by DealMint.'}\n\nLocation: ${details}`
 }
 
 function extractDiscount(hotel: BookingHotelResult) {
