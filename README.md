@@ -91,14 +91,33 @@ npm run drop:confirm
 
 ```mermaid
 flowchart TD
-  U[User Browser\nNext.js App + Wallet UI] -->|GET/POST JSON| API[/Next.js Routes/]
-  API --> S1[(Drop Rush Service)]
-  API --> S2[(NFT Mint Service - SPL)]
-  S1 <-->|ORM| DB[(PostgreSQL\nPrisma)]
-  S1 <-->|TTL 15–30s| C[(Redis)]
-  S2 --> SOL[(Solana Devnet\nRPC)]
-  S1 --> JOB[[Confirm Solana Pay refs]]
-  S1 --> ING[Booking.com Ingestion (optional)]
+  subgraph Client
+    U[Browser + Wallet UI]
+  end
+
+  subgraph Next.js API
+    API[/App Routes/]
+    S1[(Drop Rush Service)]
+    S2[(Mint Service - SPL)]
+  end
+
+  subgraph Data
+    DB[(PostgreSQL + Prisma)]
+    C[(Redis Cache)]
+  end
+
+  SOL[(Solana RPC)]
+  JOB[[Confirm Solana Pay refs]]
+  ING[[Booking ingestion (optional)]]
+
+  U -->|GET/POST JSON| API
+  API --> S1
+  API --> S2
+  S1 --> DB
+  S1 --> C
+  S2 --> SOL
+  S1 --> JOB
+  S1 --> ING
 
   DB --- D1[DailyDrop]
   DB --- D2[Deal, Analytics]
@@ -113,10 +132,6 @@ flowchart TD
 - Prefer wallet‑signed mint flow for production (prepare unsigned tx → client signs & sends).
 - Enforce rate limiting + idempotency on write endpoints (planned).
 
-## Rename & Branding
-
-- Project brand: DealMint (formerly MonkePerks). Some docs/snippets may still reference the legacy name; PRs welcome.
-
 ## License
 
-Apache‑2.0 (unless stated otherwise in subpackages).
+MIT
