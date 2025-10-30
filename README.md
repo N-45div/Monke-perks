@@ -92,25 +92,25 @@ npm run drop:confirm
 ```mermaid
 flowchart TD
   subgraph Client
-    U[Browser + Wallet UI]
+    U[Browser_and_Wallet_UI]
   end
 
-  subgraph Next.js API
-    API[/App Routes/]
-    S1[(Drop Rush Service)]
-    S2[(Mint Service - SPL)]
+  subgraph NextJS_API
+    API[App_Routes]
+    S1[Drop_Rush_Service]
+    S2[Mint_Service_SPL]
   end
 
   subgraph Data
-    DB[(PostgreSQL + Prisma)]
-    C[(Redis Cache)]
+    DB[(PostgreSQL_and_Prisma)]
+    C[(Redis_Cache)]
   end
 
-  SOL[(Solana RPC)]
-  JOB[[Confirm Solana Pay refs]]
-  ING[[Booking ingestion (optional)]]
+  SOL[(Solana_RPC)]
+  JOB[Confirm_Solana_Pay_Refs]
+  ING[Booking_Ingestion_optional]
 
-  U -->|GET/POST JSON| API
+  U -->|HTTP_JSON| API
   API --> S1
   API --> S2
   S1 --> DB
@@ -120,10 +120,10 @@ flowchart TD
   S1 --> ING
 
   DB --- D1[DailyDrop]
-  DB --- D2[Deal, Analytics]
+  DB --- D2[Deal_and_Analytics]
   DB --- D3[DropClaim]
-  DB --- D4[UserProfile, UserStreak]
-  DB --- D5[DealCoupon, CouponTransfer]
+  DB --- D4[UserProfile_and_UserStreak]
+  DB --- D5[DealCoupon_and_CouponTransfer]
 ```
 
 ## Security Notes
